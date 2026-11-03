@@ -1,1 +1,9 @@
-Config.SupabaseKey = "ТВОЙ_КЛЮЧ"
+local Config = {}
+
+Config.SupabaseURL = "https://mazbrincrjsspkjkxgrz.supabase.co"
+
+Config.SupabaseKey = ""
+
+Config.TableName = "animals"
+
+return Config

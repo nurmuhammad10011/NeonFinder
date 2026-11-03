@@ -1,9 +1,9 @@
--- STEAL AN EGG | NEON FINDER
--- Локальный поиск существ в текущем сервере
+-- STEAL AN EGG | NEON FINDER V2
+-- Локальный поиск + интерфейс базы находок
 
 local Players = game:GetService("Players")
-local player = Players.LocalPlayer
 local CoreGui = game:GetService("CoreGui")
+local player = Players.LocalPlayer
 
 pcall(function()
     local old = CoreGui:FindFirstChild("NeonFinder")
@@ -15,82 +15,143 @@ gui.Name = "NeonFinder"
 gui.ResetOnSpawn = false
 gui.Parent = CoreGui
 
-local main = Instance.new("Frame")
-main.Size = UDim2.new(0, 310, 0, 390)
-main.Position = UDim2.new(0.5, -155, 0.5, -195)
-main.BackgroundColor3 = Color3.fromRGB(8, 13, 24)
-main.BorderSizePixel = 0
-main.Active = true
-main.Draggable = true
-main.Parent = gui
+local function make(class, props, parent)
+    local obj = Instance.new(class)
+    for k, v in pairs(props) do
+        obj[k] = v
+    end
+    obj.Parent = parent
+    return obj
+end
 
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 14)
-corner.Parent = main
+local cyan = Color3.fromRGB(0, 220, 255)
+local dark = Color3.fromRGB(7, 12, 23)
+local panel = Color3.fromRGB(15, 25, 42)
 
-local stroke = Instance.new("UIStroke")
-stroke.Color = Color3.fromRGB(0, 200, 255)
-stroke.Thickness = 2
-stroke.Parent = main
+local main = make("Frame", {
+    Size = UDim2.new(0, 320, 0, 410),
+    Position = UDim2.new(0.5, -160, 0.5, -205),
+    BackgroundColor3 = dark,
+    BorderSizePixel = 0,
+    Active = true,
+    Draggable = true
+}, gui)
 
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -50, 0, 45)
-title.Position = UDim2.new(0, 12, 0, 0)
-title.BackgroundTransparency = 1
-title.Text = "✦ NEON FINDER"
-title.TextColor3 = Color3.fromRGB(0, 220, 255)
-title.TextSize = 22
-title.Font = Enum.Font.GothamBold
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Parent = main
+make("UICorner", {CornerRadius = UDim.new(0, 14)}, main)
+make("UIStroke", {Color = cyan, Thickness = 2}, main)
 
-local close = Instance.new("TextButton")
-close.Size = UDim2.new(0, 35, 0, 35)
-close.Position = UDim2.new(1, -42, 0, 5)
-close.Text = "×"
-close.TextSize = 25
-close.TextColor3 = Color3.new(1,1,1)
-close.BackgroundColor3 = Color3.fromRGB(150, 35, 55)
-close.Parent = main
-Instance.new("UICorner", close).CornerRadius = UDim.new(0, 8)
+local title = make("TextLabel", {
+    Size = UDim2.new(1, -105, 0, 45),
+    Position = UDim2.new(0, 12, 0, 0),
+    BackgroundTransparency = 1,
+    Text = "✦ NEON FINDER",
+    TextColor3 = cyan,
+    TextSize = 20,
+    Font = Enum.Font.GothamBold,
+    TextXAlignment = Enum.TextXAlignment.Left
+}, main)
+
+local mini = make("TextButton", {
+    Size = UDim2.new(0, 35, 0, 32),
+    Position = UDim2.new(1, -82, 0, 6),
+    Text = "−",
+    TextSize = 24,
+    TextColor3 = Color3.new(1,1,1),
+    BackgroundColor3 = Color3.fromRGB(0, 110, 160)
+}, main)
+make("UICorner", {CornerRadius = UDim.new(0, 8)}, mini)
+
+local close = make("TextButton", {
+    Size = UDim2.new(0, 35, 0, 32),
+    Position = UDim2.new(1, -42, 0, 6),
+    Text = "×",
+    TextSize = 23,
+    TextColor3 = Color3.new(1,1,1),
+    BackgroundColor3 = Color3.fromRGB(150, 35, 55)
+}, main)
+make("UICorner", {CornerRadius = UDim.new(0, 8)}, close)
+
+local restore = make("TextButton", {
+    Size = UDim2.new(0, 65, 0, 40),
+    Position = UDim2.new(0, 12, 0.5, -20),
+    Text = "✦ NF",
+    TextSize = 16,
+    Font = Enum.Font.GothamBold,
+    TextColor3 = cyan,
+    BackgroundColor3 = dark,
+    Visible = false
+}, gui)
+make("UICorner", {CornerRadius = UDim.new(0, 10)}, restore)
+make("UIStroke", {Color = cyan, Thickness = 2}, restore)
+
+mini.MouseButton1Click:Connect(function()
+    main.Visible = false
+    restore.Visible = true
+end)
+
+restore.MouseButton1Click:Connect(function()
+    main.Visible = true
+    restore.Visible = false
+end)
+
 close.MouseButton1Click:Connect(function()
     gui:Destroy()
 end)
 
-local status = Instance.new("TextLabel")
-status.Size = UDim2.new(1, -20, 0, 28)
-status.Position = UDim2.new(0, 10, 0, 48)
-status.BackgroundTransparency = 1
-status.Text = "Готов к поиску"
-status.TextColor3 = Color3.fromRGB(180, 200, 220)
-status.TextSize = 14
-status.Font = Enum.Font.Gotham
-status.Parent = main
+local status = make("TextLabel", {
+    Size = UDim2.new(1, -20, 0, 28),
+    Position = UDim2.new(0, 10, 0, 45),
+    BackgroundTransparency = 1,
+    Text = "Готов к поиску",
+    TextColor3 = Color3.fromRGB(190, 210, 225),
+    TextSize = 13,
+    Font = Enum.Font.Gotham
+}, main)
 
-local scan = Instance.new("TextButton")
-scan.Size = UDim2.new(1, -20, 0, 42)
-scan.Position = UDim2.new(0, 10, 0, 80)
-scan.Text = "⌕  НАЧАТЬ ПОИСК"
-scan.TextColor3 = Color3.new(1,1,1)
-scan.TextSize = 16
-scan.Font = Enum.Font.GothamBold
-scan.BackgroundColor3 = Color3.fromRGB(0, 130, 190)
-scan.Parent = main
-Instance.new("UICorner", scan).CornerRadius = UDim.new(0, 9)
+local tab1 = make("TextButton", {
+    Size = UDim2.new(0.5, -14, 0, 35),
+    Position = UDim2.new(0, 10, 0, 76),
+    Text = "🐾 ЖИВОТНЫЕ",
+    TextColor3 = Color3.new(1,1,1),
+    TextSize = 13,
+    Font = Enum.Font.GothamBold,
+    BackgroundColor3 = Color3.fromRGB(0, 115, 165)
+}, main)
 
-local list = Instance.new("ScrollingFrame")
-list.Size = UDim2.new(1, -20, 1, -140)
-list.Position = UDim2.new(0, 10, 0, 132)
-list.BackgroundColor3 = Color3.fromRGB(14, 22, 36)
-list.BorderSizePixel = 0
-list.ScrollBarThickness = 4
-list.CanvasSize = UDim2.new(0, 0, 0, 0)
-list.Parent = main
-Instance.new("UICorner", list).CornerRadius = UDim.new(0, 9)
+local tab2 = make("TextButton", {
+    Size = UDim2.new(0.5, -14, 0, 35),
+    Position = UDim2.new(0.5, 4, 0, 76),
+    Text = "🌐 СЕРВЕРЫ",
+    TextColor3 = Color3.new(1,1,1),
+    TextSize = 13,
+    Font = Enum.Font.GothamBold,
+    BackgroundColor3 = panel
+}, main)
 
-local layout = Instance.new("UIListLayout")
-layout.Padding = UDim.new(0, 7)
-layout.Parent = list
+local scan = make("TextButton", {
+    Size = UDim2.new(1, -20, 0, 40),
+    Position = UDim2.new(0, 10, 0, 118),
+    Text = "⌕  НАЧАТЬ ПОИСК",
+    TextColor3 = Color3.new(1,1,1),
+    TextSize = 15,
+    Font = Enum.Font.GothamBold,
+    BackgroundColor3 = Color3.fromRGB(0, 130, 190)
+}, main)
+make("UICorner", {CornerRadius = UDim.new(0, 9)}, scan)
+
+local list = make("ScrollingFrame", {
+    Size = UDim2.new(1, -20, 1, -170),
+    Position = UDim2.new(0, 10, 0, 165),
+    BackgroundColor3 = panel,
+    BorderSizePixel = 0,
+    ScrollBarThickness = 4,
+    CanvasSize = UDim2.new(0, 0, 0, 0)
+}, main)
+make("UICorner", {CornerRadius = UDim.new(0, 9)}, list)
+
+local layout = make("UIListLayout", {
+    Padding = UDim.new(0, 7)
+}, list)
 
 local known = {
     "Royal Skywhale", "Royal Sky Whale",
@@ -98,47 +159,80 @@ local known = {
     "Nightflame", "Kitsune", "Unicorn"
 }
 
-local function clearList()
+local function clear()
     for _, v in ipairs(list:GetChildren()) do
-        if v:IsA("Frame") then v:Destroy() end
+        if v:IsA("Frame") or v:IsA("TextLabel") then
+            v:Destroy()
+        end
     end
 end
 
-local function addPet(name, image)
-    local card = Instance.new("Frame")
-    card.Size = UDim2.new(1, -8, 0, 65)
-    card.BackgroundColor3 = Color3.fromRGB(25, 38, 58)
-    card.Parent = list
-    Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
-
-    local picture = Instance.new("ImageLabel")
-    picture.Size = UDim2.new(0, 52, 0, 52)
-    picture.Position = UDim2.new(0, 6, 0, 6)
-    picture.BackgroundColor3 = Color3.fromRGB(10, 18, 30)
-    picture.Image = image or ""
-    picture.Parent = card
-    Instance.new("UICorner", picture).CornerRadius = UDim.new(0, 7)
-
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, -72, 1, 0)
-    label.Position = UDim2.new(0, 66, 0, 0)
-    label.BackgroundTransparency = 1
-    label.Text = "✦ " .. name
-    label.TextColor3 = Color3.fromRGB(0, 220, 255)
-    label.TextSize = 15
-    label.Font = Enum.Font.GothamBold
-    label.TextWrapped = true
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = card
+local function message(txt)
+    clear()
+    make("TextLabel", {
+        Size = UDim2.new(1, -12, 0, 100),
+        BackgroundTransparency = 1,
+        Text = txt,
+        TextColor3 = cyan,
+        TextSize = 15,
+        Font = Enum.Font.GothamBold,
+        TextWrapped = true
+    }, list)
 end
+
+local function addPet(name, image)
+    local card = make("Frame", {
+        Size = UDim2.new(1, -8, 0, 66),
+        BackgroundColor3 = Color3.fromRGB(25, 40, 60)
+    }, list)
+    make("UICorner", {CornerRadius = UDim.new(0, 8)}, card)
+
+    make("ImageLabel", {
+        Size = UDim2.new(0, 52, 0, 52),
+        Position = UDim2.new(0, 6, 0, 7),
+        BackgroundColor3 = dark,
+        Image = image or ""
+    }, card)
+
+    make("TextLabel", {
+        Size = UDim2.new(1, -70, 1, 0),
+        Position = UDim2.new(0, 65, 0, 0),
+        BackgroundTransparency = 1,
+        Text = "✦ " .. name .. "\nНайдено в текущем сервере",
+        TextColor3 = cyan,
+        TextSize = 13,
+        Font = Enum.Font.GothamBold,
+        TextWrapped = true,
+        TextXAlignment = Enum.TextXAlignment.Left
+    }, card)
+end
+
+local currentTab = "pets"
+
+tab1.MouseButton1Click:Connect(function()
+    currentTab = "pets"
+    tab1.BackgroundColor3 = Color3.fromRGB(0, 115, 165)
+    tab2.BackgroundColor3 = panel
+    scan.Visible = true
+    message("Нажми «НАЧАТЬ ПОИСК», чтобы проверить текущий сервер.")
+    status.Text = "Поиск животных"
+end)
+
+tab2.MouseButton1Click:Connect(function()
+    currentTab = "servers"
+    tab2.BackgroundColor3 = Color3.fromRGB(0, 115, 165)
+    tab1.BackgroundColor3 = panel
+    scan.Visible = false
+    message("БАЗА ДРУГИХ СЕРВЕРОВ\n\nПока нет подключённой базы находок.\n\nСписок серверов Roblox не раскрывает животных внутри них.\n\nЗдесь будут появляться реальные сообщения игроков с названием животного и ID сервера.")
+    status.Text = "Ожидание данных о находках"
+end)
 
 local busy = false
 
 scan.MouseButton1Click:Connect(function()
-    if busy then return end
+    if busy or currentTab ~= "pets" then return end
     busy = true
-    clearList()
-
+    clear()
     status.Text = "Сканирование текущего сервера..."
     local found = {}
 
@@ -148,7 +242,7 @@ scan.MouseButton1Click:Connect(function()
                 if string.find(string.lower(obj.Name), string.lower(name), 1, true) then
                     if not found[obj] then
                         found[obj] = true
-                        local image = nil
+                        local image
                         for _, child in ipairs(obj:GetDescendants()) do
                             if child:IsA("Decal") or child:IsA("Texture") then
                                 image = child.Texture
@@ -166,15 +260,16 @@ scan.MouseButton1Click:Connect(function()
     local count = 0
     for _ in pairs(found) do count = count + 1 end
 
-    status.Text = "Найдено существ: " .. count
     if count == 0 then
-        status.Text = "В текущем сервере совпадений нет"
+        message("Совпадений нет.\nЭто не доказывает, что редких животных нет: их названия могут отличаться или модели могут быть скрыты.")
     end
 
-    task.wait(1)
+    status.Text = "Найдено совпадений: " .. count
     busy = false
 end)
 
 layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    list.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 10)
+    list.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 12)
 end)
+
+message("Готов к поиску!\nНажми кнопку «НАЧАТЬ ПОИСК».")

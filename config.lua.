@@ -1,0 +1,10 @@
+local Config = {}
+
+Config.SupabaseURL = "https://mazbrincrjsspkjkxgrz.supabase.co"
+
+-- Вставим публичный ключ Supabase позже
+Config.SupabaseKey = "PASTE_ANON_KEY_HERE"
+
+Config.TableName = "animals"
+
+return Config

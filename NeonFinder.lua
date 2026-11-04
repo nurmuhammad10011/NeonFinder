@@ -1,5 +1,4 @@
--- STEAL AN EGG | NEON FINDER V2
--- Локальный поиск + интерфейс базы находок
+-- STEAL AN EGG | NEON FINDER - Локальный поиск + интерфейс базы находок
 
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
